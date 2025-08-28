@@ -24,34 +24,18 @@ def ensure_frpc_toml():
             f.write("# 请根据实际需求编辑 frpc.toml 配置文件\n")
         print(f"已创建空的 {FRPC_TOML}，请手动编辑配置内容！")
 
-
 def start_frpc():
-    import time, signal
-    frpc_proc = None
-    while True:
-        # 等待联网
-        while not check_internet():
-            print("等待联网...")
-            time.sleep(3)
-        # 启动frpc
-        print("检测到联网，启动frpc...")
-        frpc_proc = subprocess.Popen([FRPC_PATH, "-c", FRPC_TOML])
-        # 监控网络状态
-        while check_internet():
-            # 检查frpc进程是否意外退出
-            if frpc_proc.poll() is not None:
-                print("frpc 进程已退出，尝试重启...")
-                break
-            time.sleep(3)
-        # 断网，终止frpc
-        if frpc_proc and frpc_proc.poll() is None:
-            print("检测到断网，结束frpc进程...")
-            frpc_proc.terminate()
-            try:
-                frpc_proc.wait(timeout=5)
-            except Exception:
-                frpc_proc.kill()
-        print("等待网络恢复...")
+    # 检查互联网连通性，直到联网才继续
+    import time
+    while not check_internet():
+        print("等待联网...")
+        time.sleep(3)
+    # 检查frpc是否已启动
+    result = subprocess.run(["pgrep", "-f", FRPC_PATH], capture_output=True)
+    if result.returncode == 0:
+        return  # 已启动
+    # 启动frpc
+    subprocess.Popen([FRPC_PATH, "-c", FRPC_TOML])
 
 # 唤醒函数
 def wake_on_lan(mac, port=9):
