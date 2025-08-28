@@ -1,0 +1,11 @@
+
+[common]
+server_addr = "Your server's public IP "
+server_port = 7000
+token = "your token"
+
+[wol_stcp]
+type = "stcp"
+sk = "your sk"
+local_ip = "127.0.0.1"
+local_port = 5000
